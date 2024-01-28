@@ -4,6 +4,7 @@ Usage:
 """
 
 import argparse
+import math
 
 import imageio
 import numpy as np
@@ -11,7 +12,6 @@ import pytorch3d
 import torch
 from PIL import Image, ImageDraw
 from tqdm.auto import tqdm
-
 from starter.utils import get_device, get_mesh_renderer
 
 
@@ -34,7 +34,8 @@ def dolly_zoom(
 
     renders = []
     for fov in tqdm(fovs):
-        distance = 56/(2*np.tanh(.5*fov))  # TODO: change this.
+        rads = fov*math.pi/180
+        distance = 5/(2*np.tan(.5*rads))  # TODO: change this.
         print(distance)
         T = [[0, 0, distance]]  # TODO: Change this.
         cameras = pytorch3d.renderer.FoVPerspectiveCameras(fov=fov, T=T, device=device)

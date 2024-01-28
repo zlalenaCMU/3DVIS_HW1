@@ -106,7 +106,7 @@ def unproject_depth_image(image, mask, depth, camera):
     rgb = rgb.to(device)
 
     # For some reason, the Pytorch3D compositor does not apply a background color
-    # unless the pointcloud is RGBA.
+    # unless the point cloud is RGBA.
     alpha = torch.ones_like(rgb)[..., :1]
     rgb = torch.cat([rgb, alpha], dim=1)
 

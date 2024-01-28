@@ -3,6 +3,7 @@ Usage:
     python -m starter.camera_transforms --image_size 512
 """
 import argparse
+import math
 
 import matplotlib.pyplot as plt
 import pytorch3d
@@ -40,9 +41,32 @@ def render_cow(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--cow_path", type=str, default="data/cow_with_axis.obj")
+    parser.add_argument("--cow_path", type=str, default="../data/cow_with_axis.obj")
     parser.add_argument("--image_size", type=int, default=256)
-    parser.add_argument("--output_path", type=str, default="images/transform_cow.jpg")
+    parser.add_argument("--output_path", type=str, default="../images/transform_cow.jpg")
     args = parser.parse_args()
 
     plt.imsave(args.output_path, render_cow(cow_path=args.cow_path, image_size=args.image_size))
+    angle = math.pi/2
+    cow_1 = render_cow(cow_path="../data/cow_with_axis.obj",image_size=256,R_relative=[[np.cos(angle), -np.sin(angle), 0], [np.sin(angle), np.cos(angle), 0], [0, 0, 1]],
+        T_relative=[0, 0, 0],
+        device=None,
+    )
+    cow_2 = render_cow(cow_path="../data/cow_with_axis.obj", image_size=256,
+                       R_relative=[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
+                       T_relative=[.5, -.5, 0],
+                       device=None,
+                       )
+
+    cow_3 = render_cow(cow_path="../data/cow_with_axis.obj", image_size=256,
+                       R_relative=[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
+                       T_relative=[0, 0, 2],
+                       device=None,
+                       )
+    angle = -angle
+    cow_4 = render_cow(cow_path="../data/cow_with_axis.obj", image_size=256,
+                       R_relative=[[np.cos(angle), 0, np.sin(angle)], [0, 1, 0], [-np.sin(angle), 0, np.cos(angle)]],
+                       T_relative=[3, 0, 3], #zoom way out when you've lost it
+                       device=None,
+                       )
+    plt.imsave(args.output_path,cow_4)

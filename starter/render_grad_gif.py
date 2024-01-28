@@ -34,7 +34,23 @@ def render_cow(
     vertices = vertices.unsqueeze(0)  # (N_v, 3) -> (1, N_v, 3)
     faces = faces.unsqueeze(0)  # (N_f, 3) -> (1, N_f, 3)
     textures = torch.ones_like(vertices)  # (1, N_v, 3)
-    textures = textures * torch.tensor(color)  # (1, N_v, 3)
+    color_2 = np.array([240/255,15/255,210/255])
+    color_1 = np.array([1, 1, 1])
+    one, vert_num, dims = vertices.shape
+    textures = np.zeros((vert_num,3))
+    z_mins = torch.min(vertices, dim =1)
+    z_min = z_mins.values[0][2]
+    z_maxs = torch.max(vertices, dim =1)
+    z_max = z_maxs.values[0][2]
+    for vert in range(0,vert_num):
+        z = vertices[:, vert,2]
+        alpha = (z-z_min)/(z_max-z_min)
+        alpha = alpha.item()
+        print(alpha)
+        color = alpha*color_2+(1-alpha)*color_1
+        textures[vert] = color
+    textures = torch.tensor(textures, dtype=torch.float)  # (1, N_v, 3)
+    textures = textures.unsqueeze(0)
     mesh = pytorch3d.structures.Meshes(
         verts=vertices,
         faces=faces,
@@ -62,7 +78,7 @@ def render_cow(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--cow_path", type=str, default="../data/cow.obj")
-    parser.add_argument("--output_path", type=str, default="../images/cow_render.gif")
+    parser.add_argument("--output_path", type=str, default="../images/cow_render_color.gif")
     parser.add_argument("--image_size", type=int, default=256)
     args = parser.parse_args()
     images = render_cow(cow_path=args.cow_path, image_size=args.image_size)
