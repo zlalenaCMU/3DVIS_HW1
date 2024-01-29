@@ -18,14 +18,16 @@ import torch
 from starter.utils import get_device, get_mesh_renderer, get_points_renderer
 
 
-def load_rgbd_data(path="data/rgbd_data.pkl"):
+def load_rgbd_data(path="../data/rgbd_data.pkl"):
     with open(path, "rb") as f:
         data = pickle.load(f)
     return data
 
-
+def render_plant(image_size=256):
+    data = load_rgbd_data()
+    print(data)
 def render_bridge(
-    point_cloud_path="data/bridge_pointcloud.npz",
+    point_cloud_path="../data/bridge_pointcloud.npz",
     image_size=256,
     background_color=(1, 1, 1),
     device=None,
@@ -114,12 +116,12 @@ if __name__ == "__main__":
         default="point_cloud",
         choices=["point_cloud", "parametric", "implicit"],
     )
-    parser.add_argument("--output_path", type=str, default="images/bridge.jpg")
+    parser.add_argument("--output_path", type=str, default="../images/bridge.jpg")
     parser.add_argument("--image_size", type=int, default=256)
     parser.add_argument("--num_samples", type=int, default=100)
     args = parser.parse_args()
     if args.render == "point_cloud":
-        image = render_bridge(image_size=args.image_size)
+        image = render_plant(image_size=args.image_size)
     elif args.render == "parametric":
         image = render_sphere(image_size=args.image_size, num_samples=args.num_samples)
     elif args.render == "implicit":
