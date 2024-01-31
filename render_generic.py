@@ -15,7 +15,7 @@ import numpy as np
 import pytorch3d
 import torch
 import imageio
-from starter.utils import get_device, get_mesh_renderer, get_points_renderer, unproject_depth_image
+from starter.utils import get_device, get_mesh_renderer, get_points_renderer, unproject_depth_image, get_gif
 
 
 def load_rgbd_data(path="data/rgbd_data.pkl"):
@@ -35,7 +35,6 @@ def render_plant(image_size=256, device=None):
     #image 1
     image1 = torch.tensor(data["rgb1"])
     cameras1 =(data["cameras1"])
-    R, T = pytorch3d.renderer.look_at_view_transform(6, 0, 0)
     depth1 = torch.tensor(data["depth1"])
     mask1 = torch.tensor(data["mask1"],)
     points1, rgb1 = unproject_depth_image(image1, mask1, depth1, cameras1)
@@ -61,12 +60,11 @@ def render_plant(image_size=256, device=None):
     # image 2
     image2 = torch.tensor(data["rgb2"])
     cameras2 = (data["cameras2"])
-    R, T = pytorch3d.renderer.look_at_view_transform(6, 0, 0)
     depth2 = torch.tensor(data["depth2"])
     mask2 = torch.tensor(data["mask2"], )
-    points2, rgb1 = unproject_depth_image(image2, mask2, depth2, cameras2)
+    points2, rgb2 = unproject_depth_image(image2, mask2, depth2, cameras2)
     points2 = points2.unsqueeze(0)
-    rgb2 = rgb1.unsqueeze(0)
+    rgb2 = rgb2.unsqueeze(0)
     point_cloud = pytorch3d.structures.Pointclouds(points=points2.to(device), features=rgb2.to(device))
     images = []
     flip = torch.tensor([[1, 0, 0], [0, -1.0, 0], [0, 0, 1]])
@@ -82,14 +80,20 @@ def render_plant(image_size=256, device=None):
         rend = rend * 255
         rend = rend.astype(np.uint8)
         images.append(rend)
-    imageio.mimsave("images/5.1_plant_combo.gif", images, duration=5, loop=10)
+    imageio.mimsave("images/5.1_plant_2.gif", images, duration=5, loop=10)
 
 
     # combo of pnt clouds
     # tutorialspoint said torch.cat() is used to concatenate two or more tensors
     # So im gonna trust that
-    point_cloud = pytorch3d.structures.Pointclouds(points=torch.cat(points1,points2).to(device), features=torch.cat(rgb1, rgb2).to(device))
-
+    rgb2 =rgb2.squeeze(0)
+    rgb1 = rgb1.squeeze(0)
+    points1 = points1.squeeze(0)
+    points2 = points2.squeeze(0)
+    points = torch.cat((points1,points2)).unsqueeze(0)
+    rgb = torch.cat((rgb1, rgb2)).unsqueeze(0)
+    point_cloud = pytorch3d.structures.Pointclouds(points=points.to(device), features=rgb.to(device))
+    images = []
     for i in range(0, 360, 5):
         R, T = pytorch3d.renderer.cameras.look_at_view_transform(dist=7, azim=i)
         T[0][0] = -.5
@@ -101,7 +105,9 @@ def render_plant(image_size=256, device=None):
         rend = rend * 255
         rend = rend.astype(np.uint8)
         images.append(rend)
-    imageio.mimsave("images/plant_2.gif", images, duration=5, loop=10)
+    imageio.mimsave("images/5.1_plant_combo.gif", images, duration=5, loop=10)
+
+
 def render_bridge(
     point_cloud_path="data/bridge_pointcloud.npz",
     image_size=256,
@@ -157,6 +163,34 @@ def render_sphere(image_size=256, num_samples=200, device=None):
     rend = renderer(sphere_point_cloud, cameras=cameras)
     return rend[0, ..., :3].cpu().numpy()
 
+def render_torus(image_size=256, num_samples=200, device=None):
+    """
+        Renders a torus using parametric sampling. Samples num_samples ** 2 points.
+        """
+
+    if device is None:
+        device = get_device()
+
+    phi = torch.linspace(0, 2 * np.pi, num_samples)
+    theta = torch.linspace(0, 2*np.pi, num_samples)
+    # Densely sample phi and theta on a grid
+    Phi, Theta = torch.meshgrid(phi, theta)
+    R = 1
+    r = .5
+    x = (R + r*torch.cos(Theta)) * torch.cos(Phi)
+    y = (R + r*torch.cos(Theta))*torch.sin(Phi)
+    z = r*torch.sin(Theta)
+
+    points = torch.stack((x.flatten(), y.flatten(), z.flatten()), dim=1)
+    color = (points - points.min()) / (points.max() - points.min())
+
+    sphere_point_cloud = pytorch3d.structures.Pointclouds(
+        points=[points], features=[color],
+    ).to(device)
+
+    renderer = get_points_renderer(image_size=image_size, device=device)
+    images = get_gif(renderer,sphere_point_cloud)
+    imageio.mimsave("images/5.2_torus.gif", images, duration=5, loop = 10)
 
 def render_sphere_mesh(image_size=256, voxel_size=64, device=None):
     if device is None:
@@ -200,7 +234,7 @@ if __name__ == "__main__":
     if args.render == "point_cloud":
         image = render_plant(image_size=args.image_size)
     elif args.render == "parametric":
-        image = render_sphere(image_size=args.image_size, num_samples=args.num_samples)
+        image = render_torus(image_size=args.image_size, num_samples=500)
     elif args.render == "implicit":
         image = render_sphere_mesh(image_size=args.image_size)
     else:

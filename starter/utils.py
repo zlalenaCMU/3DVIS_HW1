@@ -10,8 +10,8 @@ from pytorch3d.renderer import (
     HardPhongShader,
 )
 from pytorch3d.io import load_obj
-
-
+import numpy as np
+import pytorch3d
 def get_device():
     """
     Checks if GPU is available and returns device accordingly.
@@ -124,3 +124,20 @@ def load_cow_mesh(path="data/cow_mesh.obj"):
     vertices, faces, _ = load_obj(path)
     faces = faces.verts_idx
     return vertices, faces
+
+def get_gif( renderer, mesh, dist = 3,device = None):
+    images = []
+    if device is None:
+        device = get_device()
+    lights = pytorch3d.renderer.PointLights(location=[[0, 0, -3]], device=device)
+
+    for i in range(0, 360, 5):
+        R, T = pytorch3d.renderer.cameras.look_at_view_transform(dist=dist, azim=i)
+        cameras = pytorch3d.renderer.FoVPerspectiveCameras(
+            R=R, T=T, fov=60, device=device)
+        rend = renderer(mesh, cameras=cameras, lights= lights)
+        rend = rend.cpu().numpy()[0, ..., :3]
+        rend = rend * 255
+        rend = rend.astype(np.uint8)
+        images.append(rend)
+    return images
