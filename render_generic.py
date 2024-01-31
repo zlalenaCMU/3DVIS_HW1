@@ -14,20 +14,96 @@ import mcubes
 import numpy as np
 import pytorch3d
 import torch
+import imageio
+from starter.utils import get_device, get_mesh_renderer, get_points_renderer, unproject_depth_image
 
-from starter.utils import get_device, get_mesh_renderer, get_points_renderer
 
-
-def load_rgbd_data(path="../data/rgbd_data.pkl"):
+def load_rgbd_data(path="data/rgbd_data.pkl"):
     with open(path, "rb") as f:
         data = pickle.load(f)
     return data
 
-def render_plant(image_size=256):
+def render_plant(image_size=256, device=None):
     data = load_rgbd_data()
-    print(data)
+    renderer = get_points_renderer(
+        image_size=image_size, radius = 0.02,
+    )
+    if device is None:
+        device = get_device()
+
+
+    #image 1
+    image1 = torch.tensor(data["rgb1"])
+    cameras1 =(data["cameras1"])
+    R, T = pytorch3d.renderer.look_at_view_transform(6, 0, 0)
+    depth1 = torch.tensor(data["depth1"])
+    mask1 = torch.tensor(data["mask1"],)
+    points1, rgb1 = unproject_depth_image(image1, mask1, depth1, cameras1)
+    points1 = points1.unsqueeze(0)
+    rgb1 = rgb1.unsqueeze(0)
+    point_cloud = pytorch3d.structures.Pointclouds(points=points1.to(device), features=rgb1.to(device))
+    images = []
+    flip = torch.tensor([[1,0 ,0 ], [0, -1.0, 0],[0, 0, 1]])
+
+    for i in range(0,360, 5):
+        R,T = pytorch3d.renderer.cameras.look_at_view_transform(dist= 7 ,azim=i)
+        T[0][0]=-.5
+        T[0][1]=0
+        cameras = pytorch3d.renderer.FoVPerspectiveCameras(
+        R=R@flip, T=T, fov=60, device=device)
+        rend = renderer(point_cloud, cameras=cameras)
+        rend = rend.cpu().numpy()[0, ..., :3]
+        rend = rend*255
+        rend = rend.astype(np.uint8)
+        images.append(rend)
+    imageio.mimsave("images/5.1_plant_1.gif", images, duration = 5, loop=10)
+
+    # image 2
+    image2 = torch.tensor(data["rgb2"])
+    cameras2 = (data["cameras2"])
+    R, T = pytorch3d.renderer.look_at_view_transform(6, 0, 0)
+    depth2 = torch.tensor(data["depth2"])
+    mask2 = torch.tensor(data["mask2"], )
+    points2, rgb1 = unproject_depth_image(image2, mask2, depth2, cameras2)
+    points2 = points2.unsqueeze(0)
+    rgb2 = rgb1.unsqueeze(0)
+    point_cloud = pytorch3d.structures.Pointclouds(points=points2.to(device), features=rgb2.to(device))
+    images = []
+    flip = torch.tensor([[1, 0, 0], [0, -1.0, 0], [0, 0, 1]])
+
+    for i in range(0, 360, 5):
+        R, T = pytorch3d.renderer.cameras.look_at_view_transform(dist=7, azim=i)
+        T[0][0] = -.5
+        T[0][1] = 0
+        cameras = pytorch3d.renderer.FoVPerspectiveCameras(
+            R=R @ flip, T=T, fov=60, device=device)
+        rend = renderer(point_cloud, cameras=cameras)
+        rend = rend.cpu().numpy()[0, ..., :3]
+        rend = rend * 255
+        rend = rend.astype(np.uint8)
+        images.append(rend)
+    imageio.mimsave("images/5.1_plant_combo.gif", images, duration=5, loop=10)
+
+
+    # combo of pnt clouds
+    # tutorialspoint said torch.cat() is used to concatenate two or more tensors
+    # So im gonna trust that
+    point_cloud = pytorch3d.structures.Pointclouds(points=torch.cat(points1,points2).to(device), features=torch.cat(rgb1, rgb2).to(device))
+
+    for i in range(0, 360, 5):
+        R, T = pytorch3d.renderer.cameras.look_at_view_transform(dist=7, azim=i)
+        T[0][0] = -.5
+        T[0][1] = 0
+        cameras = pytorch3d.renderer.FoVPerspectiveCameras(
+            R=R @ flip, T=T, fov=60, device=device)
+        rend = renderer(point_cloud, cameras=cameras)
+        rend = rend.cpu().numpy()[0, ..., :3]
+        rend = rend * 255
+        rend = rend.astype(np.uint8)
+        images.append(rend)
+    imageio.mimsave("images/plant_2.gif", images, duration=5, loop=10)
 def render_bridge(
-    point_cloud_path="../data/bridge_pointcloud.npz",
+    point_cloud_path="data/bridge_pointcloud.npz",
     image_size=256,
     background_color=(1, 1, 1),
     device=None,
@@ -48,6 +124,7 @@ def render_bridge(
     cameras = pytorch3d.renderer.FoVPerspectiveCameras(R=R, T=T, device=device)
     rend = renderer(point_cloud, cameras=cameras)
     rend = rend.cpu().numpy()[0, ..., :3]  # (B, H, W, 4) -> (H, W, 3)
+
     return rend
 
 
@@ -128,5 +205,5 @@ if __name__ == "__main__":
         image = render_sphere_mesh(image_size=args.image_size)
     else:
         raise Exception("Did not understand {}".format(args.render))
-    plt.imsave(args.output_path, image)
+    #plt.imsave(args.output_path, image)
 
