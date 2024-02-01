@@ -125,16 +125,17 @@ def load_cow_mesh(path="data/cow_mesh.obj"):
     faces = faces.verts_idx
     return vertices, faces
 
-def get_gif( renderer, mesh, dist = 3,device = None):
+def get_gif( renderer, mesh, dist = 3,device = None, lights = None):
     images = []
     if device is None:
         device = get_device()
-    lights = pytorch3d.renderer.PointLights(location=[[0, 0, -3]], device=device)
+    if lights ==None:
+        lights = pytorch3d.renderer.PointLights(location=[[0, 0, -3]], device=device,)
 
     for i in range(0, 360, 5):
         R, T = pytorch3d.renderer.cameras.look_at_view_transform(dist=dist, azim=i)
         cameras = pytorch3d.renderer.FoVPerspectiveCameras(
-            R=R, T=T, fov=60, device=device)
+            R=R, T=T, device=device)
         rend = renderer(mesh, cameras=cameras, lights= lights)
         rend = rend.cpu().numpy()[0, ..., :3]
         rend = rend * 255

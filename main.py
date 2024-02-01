@@ -227,65 +227,77 @@ def render_transform(
 def main():
 
     color = [1,0,1]
-    # # 0.1
-    # image = render_cow(color=color)
-    # plt.imsave("images/0.1_cow_render.jpg", image)
-    #
-    # # 1.1
-    # images = render_gif()
-    # imageio.mimsave("images/1.1_cow_render.gif", images, duration = 5, loop = 10)
-    #
-    # #1.2
-    # dolly_zoom()
-    #
-    # #2.1
-    # images = render_gif(path="data/tetra.obj", image_size=256, color=color)
-    # imageio.mimsave("images/2.1_tetra_render.gif", images, duration=5, loop=10)
-    # # 2.2
-    # images = render_gif(path="data/cube.obj", image_size=256, color=color)
-    # imageio.mimsave("images/2.2_cube_render.gif", images, duration=5, loop=10)
-    #
-    # # 3
-    # color_2 = np.array([240 / 255, 15 / 255, 210 / 255])
-    # color_1 = np.array([1, 1, 1])
-    # images = render_grad(color_1=color_1, color_2=color_2)
-    # imageio.mimsave("images/3_grad_cow.gif", images, duration=5, loop = 10)
+    # 0.1
+    image = render_cow(color=color)
+    plt.imsave("images/0.1_cow_render.jpg", image)
 
-    # # 4
-    # angle = math.pi / 2
-    # cow_1 = render_transform(cow_path="data/cow_with_axis.obj", image_size=256,
-    #                    R_relative=[[np.cos(angle), -np.sin(angle), 0], [np.sin(angle), np.cos(angle), 0], [0, 0, 1]],
-    #                    T_relative=[0, 0, 0],
-    #                    device=None,
-    #                    )
-    # cow_2 = render_transform(cow_path="data/cow_with_axis.obj", image_size=256,
-    #                    R_relative=[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
-    #                    T_relative=[.5, -.5, 0],
-    #                    device=None,
-    #                    )
-    #
-    # cow_3 = render_transform(cow_path="data/cow_with_axis.obj", image_size=256,
-    #                    R_relative=[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
-    #                    T_relative=[0, 0, 2],
-    #                    device=None,
-    #                    )
-    # angle = -angle
-    # cow_4 = render_transform(cow_path="data/cow_with_axis.obj", image_size=256,
-    #                    R_relative=[[np.cos(angle), 0, np.sin(angle)], [0, 1, 0], [-np.sin(angle), 0, np.cos(angle)]],
-    #                    T_relative=[3, 0, 3],  # zoom way out when you've lost it
-    #                    device=None,
-    #                    )
-    # plt.imsave("images/4_cow1.jpg", cow_1)
-    # plt.imsave("images/4_cow2.jpg", cow_2)
-    # plt.imsave("images/4_cow3.jpg", cow_3)
-    # plt.imsave("images/4_cow4.jpg", cow_4)
+    # 1.1
+    images = render_gif()
+    imageio.mimsave("images/1.1_cow_render.gif", images, duration = 5, loop = 10)
 
-    # # 5
-    # image = render_generic.render_bridge(image_size=256)
-    # plt.imsave("images/5_bridge.jpg", image)
-    #
-    # 5.1
-    # i just made 1 gross mega function for this step, sorry
+    #1.2
+    dolly_zoom()
+
+    #2.1
+    images = render_gif(path="data/tetra.obj", image_size=256, color=color)
+    imageio.mimsave("images/2.1_tetra_render.gif", images, duration=5, loop=10)
+    # 2.2
+    images = render_gif(path="data/cube.obj", image_size=256, color=color)
+    imageio.mimsave("images/2.2_cube_render.gif", images, duration=5, loop=10)
+
+    # 3
+    color_2 = np.array([240 / 255, 15 / 255, 210 / 255])
+    color_1 = np.array([1, 1, 1])
+    images = render_grad(color_1=color_1, color_2=color_2)
+    imageio.mimsave("images/3_grad_cow.gif", images, duration=5, loop = 10)
+
+    # 4
+    angle = math.pi / 2
+    cow_1 = render_transform(cow_path="data/cow_with_axis.obj", image_size=256,
+                       R_relative=[[np.cos(angle), -np.sin(angle), 0], [np.sin(angle), np.cos(angle), 0], [0, 0, 1]],
+                       T_relative=[0, 0, 0],
+                       device=None,
+                       )
+    cow_2 = render_transform(cow_path="data/cow_with_axis.obj", image_size=256,
+                       R_relative=[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
+                       T_relative=[.5, -.5, 0],
+                       device=None,
+                       )
+
+    cow_3 = render_transform(cow_path="data/cow_with_axis.obj", image_size=256,
+                       R_relative=[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
+                       T_relative=[0, 0, 2],
+                       device=None,
+                       )
+    angle = -angle
+    cow_4 = render_transform(cow_path="data/cow_with_axis.obj", image_size=256,
+                       R_relative=[[np.cos(angle), 0, np.sin(angle)], [0, 1, 0], [-np.sin(angle), 0, np.cos(angle)]],
+                       T_relative=[3, 0, 3],  # zoom way out when you've lost it
+                       device=None,
+                       )
+    plt.imsave("images/4_cow1.jpg", cow_1)
+    plt.imsave("images/4_cow2.jpg", cow_2)
+    plt.imsave("images/4_cow3.jpg", cow_3)
+    plt.imsave("images/4_cow4.jpg", cow_4)
+
+    # 5
+    image = render_generic.render_bridge(image_size=256)
+    plt.imsave("images/5_bridge.jpg", image)
+
+    #5.1
+    #i just made 1 gross mega function for this step, sorry
     render_generic.render_plant()
+
+    #5.2 Parametric functions
+    images = render_generic.render_torus(image_size=256, num_samples=1000, device=None)
+    imageio.mimsave("images/5.2_torus.gif", images, duration=5, loop = 10)
+
+    # cool new shape
+    images = render_generic.render_klein(image_size=256, num_samples=1000, device=None)
+    imageio.mimsave("images/5.2_idk_wtf_this_is.gif", images, duration=5, loop=10)
+
+    # 5.3 Implicit Surfaces
+
+
 if __name__ == '__main__':
     main()

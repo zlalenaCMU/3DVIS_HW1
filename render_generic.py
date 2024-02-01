@@ -190,7 +190,7 @@ def render_torus(image_size=256, num_samples=200, device=None):
 
     renderer = get_points_renderer(image_size=image_size, device=device)
     images = get_gif(renderer,sphere_point_cloud)
-    imageio.mimsave("images/5.2_torus.gif", images, duration=5, loop = 10)
+    return images
 
 def render_sphere_mesh(image_size=256, voxel_size=64, device=None):
     if device is None:
@@ -217,7 +217,147 @@ def render_sphere_mesh(image_size=256, voxel_size=64, device=None):
     cameras = pytorch3d.renderer.FoVPerspectiveCameras(R=R, T=T, device=device)
     rend = renderer(mesh, cameras=cameras, lights=lights)
     return rend[0, ..., :3].detach().cpu().numpy().clip(0, 1)
+def new_shape(image_size=256,num_samples=200, device=None):
+    """
+           Renders a torus using parametric sampling. Samples num_samples ** 2 points.
+           """
+    if device is None:
+        device = get_device()
+    phi = torch.linspace(0, 2 * np.pi, num_samples)
+    theta = torch.linspace(0, 2 * np.pi, num_samples)
+    # Densely sample phi and theta on a grid
+    Phi, Theta = torch.meshgrid(phi, theta)
+    R = .7
+    r = .5
+    x = (R + r * torch.cos(Theta)) * torch.cos(Phi)
+    y = (R + r * torch.sin(Theta)) * torch.sin(Phi)
+    z = r * torch.sin(Theta)
 
+    points = torch.stack((x.flatten(), y.flatten(), z.flatten()), dim=1)
+    color = (points - points.min()) / (points.max() - points.min())
+
+    sphere_point_cloud = pytorch3d.structures.Pointclouds(
+        points=[points], features=[color],
+    ).to(device)
+
+    renderer = get_points_renderer(image_size=image_size, device=device)
+    images = get_gif(renderer, sphere_point_cloud)
+    return images
+
+def render_ultratech(image_size=256,num_samples=200, device=None):
+    """
+           Renders a torus using parametric sampling. Samples num_samples ** 2 points.
+           """
+    if device is None:
+        device = get_device()
+    phi = torch.linspace(0, 2 * np.pi, num_samples)
+    theta = torch.linspace(0, 2 * np.pi, num_samples)
+    # Densely sample phi and theta on a grid
+    Phi, Theta = torch.meshgrid(phi, theta)
+    t = .7
+    r = .4729
+    x = t*torch.cos(Theta) - r*torch.cos(Phi)
+    y = t*torch.sin(Theta)- r*torch.sin(Phi)
+    z = Theta
+
+    points = torch.stack((x.flatten(), y.flatten(), z.flatten()), dim=1)
+    color = (points - points.min()) / (points.max() - points.min())
+
+    sphere_point_cloud = pytorch3d.structures.Pointclouds(
+        points=[points], features=[color],
+    ).to(device)
+
+    renderer = get_points_renderer(image_size=image_size, device=device)
+    images = get_gif(renderer, sphere_point_cloud)
+    return images
+
+def render_klein(image_size=256,num_samples=200, device=None):
+    """
+           Renders a torus using parametric sampling. Samples num_samples ** 2 points.
+           """
+    if device is None:
+        device = get_device()
+    phi = torch.linspace(0, 2 * np.pi, num_samples)
+    theta = torch.linspace(0,  np.pi, num_samples)
+    # Densely sample phi and theta on a grid
+    v, u = torch.meshgrid(phi, theta)
+    aa = .5
+    b = .5
+    #https: // virtualmathmuseum.org / Surface / klein_bottle / klein_bottle.html  #:~:text=Klein%20Bottle%20Hermann%20Karcher%20Parametric,See%20the%20Mobius%20Strip%20first.
+    x = (aa + torch.cos(v / 2) * torch.sin(u) - torch.sin(v / 2) * torch.sin(2 * u)) * torch.cos(v)
+    y = (aa + torch.cos(v / 2) * torch.sin(u) - torch.sin(v / 2) * torch.sin(2 * u)) * torch.sin(v)
+    z = torch.sin(v / 2) * torch.sin(u) + torch.cos(v / 2) * torch.sin(2 * u)
+    # x = (a+b*(torch.cos(Theta/2)*torch.sin(Phi) - torch.sin(Theta/2)*torch.sin(2*Phi))*torch.cos(Theta))
+    # y = (a+b*(torch.cos(Theta/2)*torch.sin(Phi) - torch.sin(Theta/2)*torch.sin(2*Phi))*torch.sin(Theta))
+    # z = b*(torch.sin(Theta/2)*torch.sin(Phi)+torch.cos(Theta/2)*torch.sin(2*Phi))
+    points = torch.stack((x.flatten(), y.flatten(), z.flatten()), dim=1)
+    color = (points - points.min()) / (points.max() - points.min())
+
+    sphere_point_cloud = pytorch3d.structures.Pointclouds(
+        points=[points], features=[color],
+    ).to(device)
+
+    renderer = get_points_renderer(image_size=image_size, device=device)
+    images = get_gif(renderer, sphere_point_cloud, dist = 3.5)
+    return images
+def render_torus_mesh(image_size=256, voxel_size=64, device=None):
+    if device is None:
+        device = get_device()
+    min_value = -1.3
+    max_value = 1.3
+    R = .7
+    r = .5
+    X, Y, Z = torch.meshgrid([torch.linspace(min_value, max_value, voxel_size)] * 3)
+    voxels = torch.pow((torch.sqrt(torch.pow(X,2)+ torch.pow(Y,2))-R),2)+Z**2-r**2
+
+    vertices, faces = mcubes.marching_cubes(mcubes.smooth(voxels), isovalue=0)
+    vertices = torch.tensor(vertices).float()
+    faces = torch.tensor(faces.astype(int))
+    # Vertex coordinates are indexed by array position, so we need to
+    # renormalize the coordinate system.
+    vertices = (vertices / voxel_size) * (max_value - min_value) + min_value
+    textures = (vertices - vertices.min()) / (vertices.max() - vertices.min())
+    textures = pytorch3d.renderer.TexturesVertex(textures.unsqueeze(0))
+
+    mesh = pytorch3d.structures.Meshes([vertices], [faces], textures=textures).to(
+        device
+    )
+    lights = pytorch3d.renderer.PointLights(location=[[0, 0.0, -4.0]], device=device,)
+    renderer = get_mesh_renderer(image_size=image_size, device=device)
+    images = get_gif(renderer, mesh, dist=3, lights = lights)
+    return images
+
+#https://cs-people.bu.edu/sbargal/Fall%202016/lecture_notes/Nov_3_3d_geometry_representation
+def render_new_mesh(image_size=256, voxel_size=64, device=None):
+    if device is None:
+        device = get_device()
+    min_value = -1.3
+    max_value = 1.3
+    e_1 = .25
+    e_2 =.25
+    r_x = 1
+    r_y = 1
+    r_z = 1
+    r_axial =1
+    X, Y, Z = torch.meshgrid([torch.linspace(min_value, max_value, voxel_size)] * 3)
+    voxels = torch.pow(torch.pow(torch.pow(X/r_x, 2/e_2)+ torch.pow(Y/r_y, 2/e_2),e_2/e_1) - r_axial,2/e_2)+ torch.pow(Z/r_z, 2/e_1)-1
+
+    vertices, faces = mcubes.marching_cubes(mcubes.smooth(voxels), isovalue=0)
+    vertices = torch.tensor(vertices).float()
+    faces = torch.tensor(faces.astype(int))
+    # Vertex coordinates are indexed by array position, so we need to
+    # renormalize the coordinate system.
+    vertices = (vertices / voxel_size) * (max_value - min_value) + min_value
+    textures = (vertices - vertices.min()) / (vertices.max() - vertices.min())
+    textures = pytorch3d.renderer.TexturesVertex(textures.unsqueeze(0))
+
+    mesh = pytorch3d.structures.Meshes([vertices], [faces], textures=textures).to(
+        device
+    )
+    lights = pytorch3d.renderer.PointLights(location=[[0, 0.0, 4.0]], device=device,)
+    renderer = get_mesh_renderer(image_size=image_size, device=device)
+    images = get_gif(renderer, mesh, dist=3, lights = lights)
+    return images
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -231,13 +371,15 @@ if __name__ == "__main__":
     parser.add_argument("--image_size", type=int, default=256)
     parser.add_argument("--num_samples", type=int, default=100)
     args = parser.parse_args()
-    if args.render == "point_cloud":
-        image = render_plant(image_size=args.image_size)
-    elif args.render == "parametric":
-        image = render_torus(image_size=args.image_size, num_samples=500)
-    elif args.render == "implicit":
-        image = render_sphere_mesh(image_size=args.image_size)
-    else:
-        raise Exception("Did not understand {}".format(args.render))
-    #plt.imsave(args.output_path, image)
+    # if args.render == "point_cloud":
+    #     image = render_bridge(image_size=args.image_size)
+    # elif args.render == "parametric":
+    #     image = render_sphere(image_size=args.image_size)
+    # elif args.render == "implicit":
+    #     image = render_sphere_mesh(image_size=args.image_size)
+    # else:
+    #     raise Exception("Did not understand {}".format(args.render))
+    images = render_new_mesh(image_size=256, voxel_size=64, device=None)
+    imageio.mimsave("images/5.3_new.gif", images, duration=5, loop=10)
+    #plt.imsave("images/5.3_torus.jpg", image)
 
