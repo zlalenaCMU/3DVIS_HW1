@@ -6,18 +6,17 @@ Zoe LaLena
 """
 
 # imports
-import argparse
 
 import imageio
 import matplotlib.pyplot as plt
 import numpy as np
 import pytorch3d
 import torch
-from starter.utils import get_device, get_mesh_renderer, load_cow_mesh
+from utils import get_device, get_mesh_renderer, load_cow_mesh
 from tqdm.auto import tqdm
 import math
 from PIL import Image, ImageDraw
-import render_generic
+from utils import get_gif
 ## Section 0
 
 # 0.1 Rendering your first mesh
@@ -224,80 +223,120 @@ def render_transform(
 
 ## 5. Rendering Generic 3D Representations
 
+
+# 6
+from pytorch3d.vis.texture_vis import texturesuv_image_matplotlib
+
+from pytorch3d.io import load_objs_as_meshes
+
+
+def render_newcow(
+    cow_path="data/newcow.obj", image_size=256, color=[0.7, 0.7, 1], device=None,
+):
+    # The device tells us whether we are rendering with GPU or CPU. The rendering will
+    # be *much* faster if you have a CUDA-enabled NVIDIA GPU. However, your code will
+    # still run fine on a CPU.
+    # The default is to run on CPU, so if you do not have a GPU, you do not need to
+    # worry about specifying the device in all of these functions.
+    if device is None:
+        device = get_device()
+
+    # Get the renderer.
+    renderer = get_mesh_renderer(image_size=image_size)
+
+    # Get the vertices, faces, and textures.
+    mesh = load_objs_as_meshes([cow_path], device=device)
+    plt.figure(figsize=(7, 7))
+    texturesuv_image_matplotlib(mesh.textures, subsample=None)
+    plt.show()
+
+    # Place a point light in front of the cow.
+    lights = pytorch3d.renderer.PointLights(location=[[0, 0, -3]], device=device)
+    images = get_gif(renderer,mesh,dist=3,device=None, lights = lights)
+
+    return images
+
+def mesh_sampling_bonus(cow_path="data/cow.obj",N=100):
+
+
+
 def main():
 
-    color = [1,0,1]
-    # 0.1
-    image = render_cow(color=color)
-    plt.imsave("images/0.1_cow_render.jpg", image)
+    # color = [1,0,1]
+    # # 0.1
+    # image = render_cow(color=color)
+    # plt.imsave("images/0.1_cow_render.jpg", image)
+    #
+    # # 1.1
+    # images = render_gif()
+    # imageio.mimsave("images/1.1_cow_render.gif", images, duration = 5, loop = 10)
+    #
+    # #1.2
+    # dolly_zoom()
+    #
+    # #2.1
+    # images = render_gif(path="data/tetra.obj", image_size=256, color=color)
+    # imageio.mimsave("images/2.1_tetra_render.gif", images, duration=5, loop=10)
+    # # 2.2
+    # images = render_gif(path="data/cube.obj", image_size=256, color=color)
+    # imageio.mimsave("images/2.2_cube_render.gif", images, duration=5, loop=10)
+    #
+    # # 3
+    # color_2 = np.array([240 / 256, 15 / 256, 210 / 256])
+    # color_1 = np.array([1, 1, 1])
+    # images = render_grad(color_1=color_1, color_2=color_2)
+    # imageio.mimsave("images/3_grad_cow.gif", images, duration=5, loop = 10)
+    #
+    # # 4
+    # angle = math.pi / 2
+    # cow_1 = render_transform(cow_path="data/cow_with_axis.obj", image_size=256,
+    #                    R_relative=[[np.cos(angle), -np.sin(angle), 0], [np.sin(angle), np.cos(angle), 0], [0, 0, 1]],
+    #                    T_relative=[0, 0, 0],
+    #                    device=None,
+    #                    )
+    # cow_2 = render_transform(cow_path="data/cow_with_axis.obj", image_size=256,
+    #                    R_relative=[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
+    #                    T_relative=[.5, -.5, 0],
+    #                    device=None,
+    #                    )
+    #
+    # cow_3 = render_transform(cow_path="data/cow_with_axis.obj", image_size=256,
+    #                    R_relative=[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
+    #                    T_relative=[0, 0, 2],
+    #                    device=None,
+    #                    )
+    # angle = -angle
+    # cow_4 = render_transform(cow_path="data/cow_with_axis.obj", image_size=256,
+    #                    R_relative=[[np.cos(angle), 0, np.sin(angle)], [0, 1, 0], [-np.sin(angle), 0, np.cos(angle)]],
+    #                    T_relative=[3, 0, 3],  # zoom way out when you've lost it
+    #                    device=None,
+    #                    )
+    # plt.imsave("images/4_cow1.jpg", cow_1)
+    # plt.imsave("images/4_cow2.jpg", cow_2)
+    # plt.imsave("images/4_cow3.jpg", cow_3)
+    # plt.imsave("images/4_cow4.jpg", cow_4)
+    #
+    # # 5
+    # image = render_generic.render_bridge(image_size=256)
+    # plt.imsave("images/5_bridge.jpg", image)
+    #
+    # #5.1
+    # #i just made 1 gross mega function for this step, sorry
+    # render_generic.render_plant()
+    #
+    # #5.2 Parametric functions
+    # images = render_generic.render_torus(image_size=256, num_samples=1000, device=None)
+    # imageio.mimsave("images/5.2_torus.gif", images, duration=5, loop = 10)
+    #
+    # # cool new shape
+    # images = render_generic.render_klein(image_size=256, num_samples=1000, device=None)
+    # imageio.mimsave("images/5.2_idk_wtf_this_is.gif", images, duration=5, loop=10)
+    #
+    # # 5.3 Implicit Surfaces
 
-    # 1.1
-    images = render_gif()
-    imageio.mimsave("images/1.1_cow_render.gif", images, duration = 5, loop = 10)
 
-    #1.2
-    dolly_zoom()
-
-    #2.1
-    images = render_gif(path="data/tetra.obj", image_size=256, color=color)
-    imageio.mimsave("images/2.1_tetra_render.gif", images, duration=5, loop=10)
-    # 2.2
-    images = render_gif(path="data/cube.obj", image_size=256, color=color)
-    imageio.mimsave("images/2.2_cube_render.gif", images, duration=5, loop=10)
-
-    # 3
-    color_2 = np.array([240 / 255, 15 / 255, 210 / 255])
-    color_1 = np.array([1, 1, 1])
-    images = render_grad(color_1=color_1, color_2=color_2)
-    imageio.mimsave("images/3_grad_cow.gif", images, duration=5, loop = 10)
-
-    # 4
-    angle = math.pi / 2
-    cow_1 = render_transform(cow_path="data/cow_with_axis.obj", image_size=256,
-                       R_relative=[[np.cos(angle), -np.sin(angle), 0], [np.sin(angle), np.cos(angle), 0], [0, 0, 1]],
-                       T_relative=[0, 0, 0],
-                       device=None,
-                       )
-    cow_2 = render_transform(cow_path="data/cow_with_axis.obj", image_size=256,
-                       R_relative=[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
-                       T_relative=[.5, -.5, 0],
-                       device=None,
-                       )
-
-    cow_3 = render_transform(cow_path="data/cow_with_axis.obj", image_size=256,
-                       R_relative=[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
-                       T_relative=[0, 0, 2],
-                       device=None,
-                       )
-    angle = -angle
-    cow_4 = render_transform(cow_path="data/cow_with_axis.obj", image_size=256,
-                       R_relative=[[np.cos(angle), 0, np.sin(angle)], [0, 1, 0], [-np.sin(angle), 0, np.cos(angle)]],
-                       T_relative=[3, 0, 3],  # zoom way out when you've lost it
-                       device=None,
-                       )
-    plt.imsave("images/4_cow1.jpg", cow_1)
-    plt.imsave("images/4_cow2.jpg", cow_2)
-    plt.imsave("images/4_cow3.jpg", cow_3)
-    plt.imsave("images/4_cow4.jpg", cow_4)
-
-    # 5
-    image = render_generic.render_bridge(image_size=256)
-    plt.imsave("images/5_bridge.jpg", image)
-
-    #5.1
-    #i just made 1 gross mega function for this step, sorry
-    render_generic.render_plant()
-
-    #5.2 Parametric functions
-    images = render_generic.render_torus(image_size=256, num_samples=1000, device=None)
-    imageio.mimsave("images/5.2_torus.gif", images, duration=5, loop = 10)
-
-    # cool new shape
-    images = render_generic.render_klein(image_size=256, num_samples=1000, device=None)
-    imageio.mimsave("images/5.2_idk_wtf_this_is.gif", images, duration=5, loop=10)
-
-    # 5.3 Implicit Surfaces
-
-
+    # 6
+    images = render_newcow()
+    imageio.mimsave("images/6_gay_cow.gif", images, duration=5, loop=10)
 if __name__ == '__main__':
     main()

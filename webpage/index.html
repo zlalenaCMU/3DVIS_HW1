@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="utf-8" />
+    <title>16-825 HW 1 Zoe LaLena</title>
+    <style>
+    .custom {
+     font-family: Verdana;
+     color: white;
+     text-align: center
+    }
+    .custom:link {
+     color: #cecff8;
+     }
+     .custom:visited {
+     color: #cecff8;
+     }
+
+     .column {
+      float: left;
+      width: 30%;
+      padding: 2px;
+    }
+
+    .row::after {
+      content: "";
+      clear: both;
+      display: table;
+    }
+
+    </style>
+
+</head>
+<body bgcolor="black">
+
+    <h1 class="custom">Assignment 1: Rendering Basics with PyTorch3D</h1>
+    <h2 class="custom">Course: Learning for 3D Vision</h2>
+    <h3 class="custom">Zoë LaLena</h3>
+    <div style="border-style: solid; margin: auto; border-color: #cecff8; height: 200 px; width: 50%;">
+      <h3 style="font-family: Verdana; color:#cecff8; text-align: center; font-size: 22px" ><b>1. Practicing with Cameras</b></h3>
+      <h4 style="font-family: Verdana; color:#cecff8; text-align: center">1.1. 360-degree Renders</h4>
+        <center><img src="data/1.1_cow_render.gif" img_align="middle"></center>
+    <h4 style="font-family: Verdana; color:#cecff8; text-align: center">1.2. Re-creating the Dolly Zoom</h4>
+        <center><img src="data/1.2_dolly.gif" img_align="middle"></center>
+    </div>
+
+    <div style="border-style: solid; margin: auto; border-color: #cecff8; height: 200 px; width: 50%; margin-top: 20px">
+      <h3 style="font-family: Verdana; color:#cecff8; text-align: center; font-size: 22px" ><b>2. Practicing with Meshes</b></h3>
+      <h4 style="font-family: Verdana; color:#cecff8; text-align: center">2.1 Constructing a Tetrahedron</h4>
+        <center><img src="data/2.1_tetra_render.gif" img_align="middle"></center>
+        <p class="custom">Vertices: 4</p>
+        <p class="custom">Faces: 4</p>
+    <h4 style="font-family: Verdana; color:#cecff8; text-align: center">2.2 Constructing a Cube</h4>
+        <center><img src="data/2.2_cube_render.gif" img_align="middle"></center>
+        <p class="custom">Vertices: 8</p>
+        <p class="custom">Faces: 12</p>
+    </div>
+
+    <div style="border-style: solid; margin: auto; border-color: #cecff8; height: 200 px; width: 50%; margin-top: 20px">
+      <h3 style="font-family: Verdana; color:#cecff8; text-align: center; font-size: 22px" ><b>3. Re-texturing a Mesh </b></h3>
+        <center><img src="data/3_grad_cow.gif" img_align="middle"></center>
+        <p class="custom">I asked my best friend what colours to use while I was coding this up in a Discord VC. She said pink and white, for a strawberry milk cow.</p>
+        <p class="custom">Colour 1: White =[1,1,1]</p>
+        <p class="custom">Colour 2: Pink = [240,15,210]/256</p>
+    </div>
+
+ <div style="border-style: solid; margin: auto; border-color: #cecff8; height: 200 px; width: 50%; margin-top: 20px">
+      <h3 style="font-family: Verdana; color:#cecff8; text-align: center; font-size: 22px" ><b>4. Camera Transformations </b></h3>
+        <h4 style="font-family: Verdana; color:#cecff8; text-align: center; font-size: 22px" ><b>Transform 1 </b></h4>
+        <center><img src="data/4_cow1.jpg" img_align="middle"></center>
+        <p class="custom">This cow is rotated 90 Degrees from the original. So the R_relative matrix is created to reflect this rotation.</p>
+        <center><img src="data/4_cow1_R.png" img_align="middle"></center>
+     <center><img src="data/4_0_T.png" img_align="middle"></center>
+     <h4 style="font-family: Verdana; color:#cecff8; text-align: center; font-size: 22px" ><b>Transform 2 </b></h4>
+        <center><img src="data/4_cow2.jpg" img_align="middle"></center>
+        <p class="custom">This cow is shifted down and to the left. In order to get this transformed cow we must move it left positive 1/2, and down negative 1/2.</p>
+        <center><img src="data/4_cow2_R.png" img_align="middle"></center>
+     <center><img src="data/4_cow2_T.png" img_align="middle"></center>
+     <h4 style="font-family: Verdana; color:#cecff8; text-align: center; font-size: 22px" ><b>Transform 3 </b></h4>
+        <center><img src="data/4_cow3.jpg" img_align="middle"></center>
+        <p class="custom">This cow is smaller, which means it's further from the camera in the z-direction.</p>
+        <center><img src="data/4_cow2_R.png" img_align="middle"></center>
+     <center><img src="data/4_cow3_T.png" img_align="middle"></center>
+     <h4 style="font-family: Verdana; color:#cecff8; text-align: center; font-size: 22px" ><b>Transform 4 </b></h4>
+        <center><img src="data/4_cow4.jpg" img_align="middle"></center>
+        <p class="custom">The rear end of this cow is rotated towards us -90 degrees. This means the middle row of our R matrix is 0's and 1's and the first and last row contain our sines and cosines, because we are rotating about the x-axis, instead of the z. Then we have to get the cow back in center of the frame my translating a bit.  </p>
+        <center><img src="data/4_cow4_R.png" img_align="middle"></center>
+     <center><img src="data/4_cow4_T.png" img_align="middle"></center>
+    </div>
+
+ <div style="border-style: solid; margin: auto; border-color: #cecff8; height: 200 px; width: 50%; margin-top: 20px">
+      <h3 style="font-family: Verdana; color:#cecff8; text-align: center; font-size: 22px" ><b>5. Rendering Generic 3D Representations </b></h3>
+        <h4 style="font-family: Verdana; color:#cecff8; text-align: center; font-size: 22px" ><b>5.1 Rendering Point Clouds from RGB-D Images </b></h4>
+         <div class="row">
+              <div class="column">
+                <img src="data/5.1_plant_1.gif" style="width:100%">
+              </div>
+              <div class="column">
+                <img src="data/5.1_plant_2.gif" style="width:100%">
+              </div>
+              <div class="column">
+                <img src="data/5.1_plant_combo.gif"  style="width:100%">
+              </div>
+        </div>
+     <h4 style="font-family: Verdana; color:#cecff8; text-align: center; font-size: 22px" ><b>5.2 Parametric Functions </b></h4>
+     <h5 style="font-family: Verdana; color:#cecff8; text-align: center; font-size: 22px" ><b>Torus </b></h5>
+     <center><img src="data/5.2_torus.gif" img_align="middle"></center>
+
+     <h5 style="font-family: Verdana; color:#cecff8; text-align: center; font-size: 22px" ><b>IDK What This Shape is </b></h5>
+     <center><img src="data/5.2_newshape.gif" img_align="middle"></center>
+     <p class = "custom">The equation used for this shape is from virtualmathmuseum.org found <a href="https://virtualmathmuseum.org/Surface/klein_bottle/klein_bottle.html">on this site.</a></p>
+
+     <h4 style="font-family: Verdana; color:#cecff8; text-align: center; font-size: 22px" ><b>5.3 Implicit Surfaces </b></h4>
+     <h5 style="font-family: Verdana; color:#cecff8; text-align: center; font-size: 22px" ><b>Torus </b></h5>
+     <center><img src="data/5.3_torus.gif" img_align="middle"></center>
+
+     <h5 style="font-family: Verdana; color:#cecff8; text-align: center; font-size: 22px" ><b>Supertoroid </b></h5>
+     <center><img src="data/5.3_new.gif" img_align="middle"></center>
+     <p class = "custom">The equation used for this shape is from a Boston University Computer Graphics slide deck found <a href="https://cs-people.bu.edu/sbargal/Fall%202016/lecture_notes/Nov_3_3d_geometry_representation">on this site.</a></p>
+     <h5 style="font-family: Verdana; color:#cecff8; text-align: center; font-size: 22px" ><b>Tradeoffs Between Rendering as a Mesh VS a Point Cloud</b></h5>
+     <p class="custom">Point clouds can be rendered faster than meshes depending on the number of points, instead of creating a surface we more just plopping points in 3D which is a lot faster than rendering a mesh. This may longer hold true if we have a large amount of points representing a simple mesh like a cube. This also brings up a quality issue with point clouds, as seen in the plant renderings, because we are just plotting points we have data for the quality isn't great. If we compared it to having a full mesh of a plant where we weren't missing details and the surface was complete our result would look much better. Point clouds can use significantly more memory than meshes because we need to store the position and color (and possible more info) for every point we have. The point cloud Torus was a bit easier to renderer than the mesh in my opinion, but neither was overly complicated.</p>
+ <h3 style="font-family: Verdana; color:#cecff8; text-align: center; font-size: 22px" ><b>6. Do Something Fun </b></h3>
+     <center><img src="data/6_cow.gif" img_align="middle"></center>
+     <p class="custom">I spent probably way to long figuring out how to create my own texture map for the cow. I made the cow have a wooden texture with colorful spots all over his body. It was fun though and super exciting when I got it work!</p>
+ </div>
+</body>
+</html>

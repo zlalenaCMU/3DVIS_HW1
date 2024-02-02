@@ -12,7 +12,7 @@ import pytorch3d
 import torch
 from PIL import Image, ImageDraw
 from tqdm.auto import tqdm
-from starter.utils import get_device, get_mesh_renderer
+from utils import get_device, get_mesh_renderer
 
 
 def dolly_zoom(

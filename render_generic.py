@@ -9,13 +9,12 @@ Usage:
 import argparse
 import pickle
 
-import matplotlib.pyplot as plt
 import mcubes
 import numpy as np
 import pytorch3d
 import torch
 import imageio
-from starter.utils import get_device, get_mesh_renderer, get_points_renderer, unproject_depth_image, get_gif
+from utils import get_device, get_mesh_renderer, get_points_renderer, unproject_depth_image, get_gif
 
 
 def load_rgbd_data(path="data/rgbd_data.pkl"):
